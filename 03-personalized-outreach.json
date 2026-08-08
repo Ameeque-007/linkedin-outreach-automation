@@ -1,0 +1,327 @@
+{
+  "name": "personalized outreach",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "73f31eac-3d0c-4cae-824b-4dc9c0a07e2a",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7de1af2b-44f5-4867-b03c-84897f3a2b9a",
+      "name": "Webhook",
+      "webhookId": "73f31eac-3d0c-4cae-824b-4dc9c0a07e2a"
+    },
+    {
+      "parameters": {
+        "operation": "getOutput",
+        "agentId": "YOUR_AGENT_ID_HERE",
+        "additionalFields": {
+          "prevContainerId": "={{ $json.body.containerId }}"
+        }
+      },
+      "type": "n8n-nodes-base.phantombuster",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3fc8da53-227d-4508-9d22-4f827a61cabf",
+      "name": "Get the output of an agent",
+      "credentials": {
+        "phantombusterApi": {
+          "id": "9LOacpyTGws7yvgq",
+          "name": "Phantombuster account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "d37f055d-31ea-4880-bc61-d4a792b49da7",
+      "name": "Wait",
+      "webhookId": "6ee1202a-89cb-4219-9ef0-3ad6d1e2c0bb"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const text = item.json?.text\n    || item.json?.response?.text\n    || item.json?.output\n    || item.json?.response?.generations?.[0]?.[0]?.text\n    || item.json?.generations?.[0]?.[0]?.text;\n\n  if (!text) {\n    return {\n      json: {\n        status: \"failed\",\n        reason: \"No text found\",\n        rawKeys: Object.keys(item.json),\n        raw: JSON.stringify(item.json).slice(0, 500)\n      }\n    };\n  }\n\n  const cleaned = text\n    .replace(/```json/gi, '')\n    .replace(/```/g, '')\n    .trim();\n\n  try {\n    const parsed = JSON.parse(cleaned);\n    return { json: { ...parsed, status: \"success\" } };\n  } catch (e) {\n    return {\n      json: {\n        connection_request: \"\",\n        \"1st_followup\": \"\",\n        \"2nd_followup\": \"\",\n        status: \"failed\",\n        reason: \"JSON parse error: \" + e.message,\n        raw: cleaned\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "8b77d968-e5e0-4b2f-b987-0cd948abe777",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_RESOURCE_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "Linkedin leads ",
+          "cachedResultUrl": "YOUR_RESOURCE_URL_HERE"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1717241487,
+          "mode": "list",
+          "cachedResultName": "URLs data",
+          "cachedResultUrl": "YOUR_RESOURCE_URL_HERE"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "LinkedIn profile url": "={{ $('Get the output of an agent').item.json.linkedinProfileUrl }}",
+            "Name": "={{ $('Get the output of an agent').item.json.firstName }}",
+            "ConnectionRequest": "={{ $json.connection_request }}",
+            "first_followup": "={{ $json['1st_followup'] }}",
+            "second_followup": "={{ $json['2nd_followup'] }}",
+            "title": "={{ $('Get the output of an agent').item.json.linkedinHeadline }}",
+            "summary": "={{ $('Get the output of an agent').item.json.linkedinDescription }}",
+            "company": "={{ $('Get the output of an agent').item.json.companyName }}",
+            " jon title description": "={{ $('Get the output of an agent').item.json.linkedinPreviousJobDescription }}"
+          },
+          "matchingColumns": [
+            "LinkedIn profile url"
+          ],
+          "schema": [
+            {
+              "id": "LinkedIn profile url",
+              "displayName": "LinkedIn profile url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ConnectionRequest",
+              "displayName": "ConnectionRequest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_followup",
+              "displayName": "first_followup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "second_followup",
+              "displayName": "second_followup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "industry",
+              "displayName": "industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " jon title description",
+              "displayName": " jon title description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1232,
+        0
+      ],
+      "id": "1cd7cb82-a2a9-4a5f-a7b9-565db9bf7a3c",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gOIwJgg1A6j6OhBX",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an expert B2B LinkedIn outreach specialist. Your sole function is to analyze prospect data and generate three personalized LinkedIn outreach messages for a Virtual Assistant and operational support business.  SERVICES CONTEXT: The business provides trained Virtual Assistants and operational support including: Administrative Assistance, Email Management, CRM Management, Market Research, Social Media Management, Content Scheduling, Reporting, SEO Support, Ad Campaign Support, and Basic Graphic Design Support.  OUTREACH GOALS: - Build genuine relationships - Start natural conversations - Generate curiosity and interest - Never sell aggressively - Never pressure the prospect - Never sound like an AI or template  ANALYSIS INSTRUCTIONS: Before writing, analyze all available prospect data: - Full name and current job title - Company name and industry - LinkedIn headline - Follower count and profile signals - Previous job history and descriptions - Hiring activity signals - Any achievements or growth indicators  PERSONALIZATION RULES: - Only use information actually present in the input data - Never invent facts, assume details, or hallucinate information - Never use generic compliments - Never use buzzwords, emojis, or excessive enthusiasm - Sound completely human and natural - Keep every message concise and conversational - Avoid anything that feels mass-produced or templated  MESSAGE SPECIFICATIONS:  connection_request: - Maximum 300 characters - Personalized to the prospect's role, headline, or something specific in their profile - Goal is connection acceptance only - No pitch, no selling, no meeting request  1st_followup: - Sent after connection is accepted - Warm, friendly, and conversational - Reference something specific from their profile - Open a dialogue naturally - No hard pitch, no meeting request  2nd_followup: - Sent only if prospect has not replied - Short and polite - Lightly reference the value of operational or Virtual Assistant support in the context of what they do - No pressure, no urgency language  STRICT OUTPUT RULES: - Return valid JSON only - Return exactly 3 keys: connection_request, 1st_followup, 2nd_followup - Return no extra keys - Return no markdown - Return no code fences - Return no explanations, notes, or commentary - Return no text before the JSON - Return no text after the JSON - Output must be directly parseable by JSON.parse()  OUTPUT FORMAT: {\"connection_request\":\"\",\"1st_followup\":\"\",\"2nd_followup\":\"\"}"
+            },
+            {
+              "content": "=First Name: {{ $json.firstName }}\nJob Title: {{ $json.linkedinJobTitle }}\nHeadline: {{ $json.linkedinHeadline }}\nSummary: {{ $json.linkedinDescription ? $json.linkedinDescription.slice(0, 300) : 'N/A' }}\nCompany: {{ $json.companyName }}\nLocation: {{ $json.location }}\nSkills: {{ $json.linkedinSkillsLabel ? $json.linkedinSkillsLabel.slice(0, 150) : 'N/A' }}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "847b4660-6eef-4453-9f06-a5923af4b742",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "cRA767x6qSSMXzXn",
+          "name": "OpenAI account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get the output of an agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the output of an agent": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ffbb7d12-f145-4f2a-a123-8af2207241fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "669f4d03b9c661d26ee4f9a0522452a1565bea484ddfc51d3ae775c5257b3aa5"
+  },
+  "nodeGroups": [],
+  "id": "meFwL1y8kp3d7B1Q",
+  "tags": []
+}
