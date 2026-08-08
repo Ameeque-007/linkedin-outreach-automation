@@ -1,0 +1,213 @@
+{
+  "name": "Get Scrapped Leads",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "f2c9daf5-5ec2-467c-9f4f-aaf719571bc7",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "72210f5c-927d-441a-ad81-cae6a111421b",
+      "name": "Webhook",
+      "webhookId": "f2c9daf5-5ec2-467c-9f4f-aaf719571bc7"
+    },
+    {
+      "parameters": {
+        "operation": "getOutput",
+        "agentId": "YOUR_AGENT_ID_HERE",
+        "additionalFields": {
+          "prevContainerId": "={{ $json.body.containerId }}"
+        }
+      },
+      "type": "n8n-nodes-base.phantombuster",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "58440168-760a-4738-af2f-73ee825dd8fd",
+      "name": "Get the output of an agent",
+      "credentials": {
+        "phantombusterApi": {
+          "id": "9LOacpyTGws7yvgq",
+          "name": "Phantombuster account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_RESOURCE_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "Linkedin leads ",
+          "cachedResultUrl": "YOUR_RESOURCE_URL_HERE"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "profile urls",
+          "cachedResultUrl": "YOUR_RESOURCE_URL_HERE"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "LinkedIn profile url": "={{ $json.profileUrl }}"
+          },
+          "matchingColumns": [
+            "LinkedIn profile url"
+          ],
+          "schema": [
+            {
+              "id": "LinkedIn profile url",
+              "displayName": "LinkedIn profile url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        0
+      ],
+      "id": "d8745685-7ab2-4be4-9a9a-9b78510003e4",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gOIwJgg1A6j6OhBX",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agentId": "YOUR_AGENT_ID_HERE",
+        "jsonParameters": true,
+        "additionalFields": {
+          "argumentsJson": "={\n\t\"enrichWithCompanyData\": false,\n\t\"updateMonitoringMetadata\": false,\n\t\"pushResultToCRM\": true,\n\t\"spreadsheetUrl\": \"https://docs.google.com/spreadsheets/d/YOUR_RESOURCE_ID_HERE/edit?usp=sharing\",\n\t\"identities\": [\n\t\t{\n\t\t\t\"identityId\": \"YOUR_IDENTITY_ID_HERE\",\n\t\t\t\"sessionCookie\": \"{{ $json.SessionCookie }}\",\n\t\t\t\"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"\n\t\t}\n\t],\n\t\"crmOutputFieldsMapping\": [],\n\t\"columnName\": \"LinkedIn profile url\",\n\t\"numberOfAddsPerLaunch\": 10\n} "
+        }
+      },
+      "type": "n8n-nodes-base.phantombuster",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "f885b0aa-ec04-4a01-885e-575e95f15eac",
+      "name": "Add an agent to the launch queue",
+      "executeOnce": true,
+      "credentials": {
+        "phantombusterApi": {
+          "id": "9LOacpyTGws7yvgq",
+          "name": "Phantombuster account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YOUR_RESOURCE_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "Session key",
+          "cachedResultUrl": "YOUR_RESOURCE_URL_HERE"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        0
+      ],
+      "id": "32105d08-e989-4ebf-8fc2-fae34af3cf6e",
+      "name": "Get row(s)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the output of an agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Add an agent to the launch queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Get the output of an agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "5152d303-d953-438d-af89-65b7a5e08554",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "669f4d03b9c661d26ee4f9a0522452a1565bea484ddfc51d3ae775c5257b3aa5"
+  },
+  "nodeGroups": [],
+  "id": "CsrZo11mEnvTw2hq",
+  "tags": []
+}
