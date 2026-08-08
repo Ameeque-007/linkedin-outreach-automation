@@ -1,0 +1,143 @@
+{
+  "name": "Scrapper",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "linkedin outreach ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Enter Url"
+            },
+            {
+              "fieldLabel": "Enter Session cookie"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        16,
+        0
+      ],
+      "id": "8d4f78d4-0db6-491d-8217-016e8239f65e",
+      "name": "On form submission",
+      "webhookId": "77eecbf1-b3d9-4900-89ca-bd808caac830"
+    },
+    {
+      "parameters": {
+        "agentId": "YOUR_AGENT_ID_HERE",
+        "jsonParameters": true,
+        "additionalFields": {
+          "argumentsJson": "={\n\t\"category\": \"People\",\n\t\"connectionDegreesToScrape\": [\n\t\t\"2\",\n\t\t\"3+\"\n\t],\n\t\"numberOfLinesPerLaunch\": 10,\n\t\"numberOfResultsPerLaunch\": 10,\n\t\"searchType\": \"linkedInSearchUrl\",\n\t\"enrichLeadsWithAdditionalInformation\": true,\n\t\"identities\": [\n\t\t{\n\t\t\t\"identityId\": \"YOUR_IDENTITY_ID_HERE\",\n\t\t\t\"sessionCookie\": \"{{ $json[\"Enter Session cookie\"] }}\",\n\t\t\t\"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"\n\t\t}\n\t],\n\t\"numberOfResultsPerSearch\": 10,\n\t\"linkedInSearchUrl\": \"{{ $json['Enter Url'].replace(/\\\"/g, '%22') }}\"\n}"
+        }
+      },
+      "type": "n8n-nodes-base.phantombuster",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "8c423a6c-37a2-405c-bffd-12fc58328d4b",
+      "name": "Add an agent to the launch queue",
+      "credentials": {
+        "phantombusterApi": {
+          "id": "9LOacpyTGws7yvgq",
+          "name": "Phantombuster account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YOUR_RESOURCE_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "Session key",
+          "cachedResultUrl": "YOUR_RESOURCE_URL_HERE"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "1"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "SessionCookie": "={{ $('On form submission').item.json['Enter Session cookie'] }}"
+          },
+          "matchingColumns": [
+            "SessionCookie"
+          ],
+          "schema": [
+            {
+              "id": "SessionCookie",
+              "displayName": "SessionCookie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "86d194c8-3ecf-4bc8-a6ce-3e28216e7c02",
+      "name": "Update row(s)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Add an agent to the launch queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add an agent to the launch queue": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "5e58095e-b5b1-4681-972b-6fc9022e6982",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "669f4d03b9c661d26ee4f9a0522452a1565bea484ddfc51d3ae775c5257b3aa5"
+  },
+  "nodeGroups": [],
+  "id": "yUxRQpNsbb5ekHO4",
+  "tags": []
+}
